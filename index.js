@@ -225,6 +225,27 @@ function _readFC43(data, modbus, next) {
 }
 
 /**
+ * Parse the data for a Modbus -
+ * Read Parameter Number Compressed (FC=65)
+ *
+ * @param {Buffer} data the data buffer to parse.
+ * @param {Function} next the function to call next.
+ */
+function _readFC65(data, next) {
+    const length = data.readUInt8(2); // byte count
+    const errorFlags = data.readUInt16BE(3); // should be parsed as an array of bits
+    const contents = [];
+
+    for (let i = 0; i <= (length - 2); i += 2) {
+        const reg = data.readUInt16BE(i + 5);
+        contents.push(reg);
+    }
+
+    if (next)
+        next(null, { "data": contents, "errorFlags": errorFlags, "buffer": data.slice(3, 3 + length) });
+}
+
+/**
  * Wrapper method for writing to a port with timeout. <code><b>[this]</b></code> has the context of ModbusRTU
  * @param {Buffer} buffer The data to send
  * @private
@@ -445,6 +466,10 @@ function _onReceive(data) {
         case 43:
             // read device identification
             _readFC43(data, modbus, next);
+            break;
+        case 65:
+            // read compressed
+            _readFC65(data, next);
     }
 }
 
@@ -925,8 +950,10 @@ class ModbusRTU extends EventEmitter {
     }
 
     /**
-     * Write  mODBUS "Read Device Identification" (FC=20) to serial port
+     * Write Modbus "Read Device Identification" (FC=20) to serial port
      * @param {number} address the slave unit address.
+     * @param {number} fileNumber the file number. // TODO: Write better description
+     * @param {number} recordNumber the record number. // TODO: Write better description
      * @param {Function} next;
      */
     writeFC20(address, fileNumber, recordNumber, next) {
@@ -996,6 +1023,55 @@ class ModbusRTU extends EventEmitter {
         buf.writeUInt8(objectId, 4);
         // add crc bytes to buffer
         buf.writeUInt16LE(crc16(buf.slice(0, -2)), codeLength);
+        // write buffer to serial port
+        _writeBufferToPort.call(this, buf, this._port._transactionIdWrite);
+    }
+
+    /**
+     * Write a Modbus "Read Parameter Number Compressed" (FC=65) to serial port.
+     *
+     * @param {number} address the slave unit address.
+     * @param {number} parameterNumbers a list of parameter numbers to be requested.
+     * @param {Function} next the function to call next.
+     */
+    writeFC65(address, parameterNumbers, next) {
+        // check port is actually open before attempting write
+        if (this.isOpen !== true) {
+            if (next) next(new PortNotOpenError());
+            return;
+        }
+
+        // sanity check
+        if (typeof address === "undefined" || !Array.isArray(parameterNumbers) || parameterNumbers.length > 16) {
+            if (next) next(new BadAddressError());
+            return;
+        }
+
+        const code = 0x41; // 65
+        const quantityOfParameters = parameterNumbers.length;
+
+        // set state variables
+        this._transactions[this._port._transactionIdWrite] = {
+            nextAddress: address,
+            nextCode: code,
+            nextLength: 4 + 2 * quantityOfParameters + 2, // The expected length of the response
+            next: next
+        };
+
+        const codeLength = 3 + 2 * quantityOfParameters;
+        const buf = Buffer.alloc(codeLength + 2); // add 2 crc bytes
+
+        buf.writeUInt8(address, 0);
+        buf.writeUInt8(code, 1);
+        buf.writeUInt8(quantityOfParameters, 2);
+
+        parameterNumbers.forEach((pnu, index) => {
+            buf.writeUInt16BE(pnu, 3 + 2 * index);
+        });
+
+        // add crc bytes to buffer
+        buf.writeUInt16LE(crc16(buf.slice(0, -2)), codeLength);
+
         // write buffer to serial port
         _writeBufferToPort.call(this, buf, this._port._transactionIdWrite);
     }

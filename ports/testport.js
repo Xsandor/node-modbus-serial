@@ -25,8 +25,8 @@ class TestPort extends EventEmitter {
     constructor() {
         super();
 
-        // simulate 11 input registers
-        this._registers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        // simulate 16 input registers
+        this._registers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
         // simulate 11 holding registers
         this._holding_registers = [0, 0, 0, 0, 0, 0, 0, 0, 0xa12b, 0xffff, 0xb21a];
@@ -248,6 +248,27 @@ class TestPort extends EventEmitter {
             buffer.writeUInt8(data.readInt8(4), 8);
             buffer.writeUInt8(productCode.length, 9);
             buffer.write(productCode, 10, productCode.length, "ascii");
+        }
+
+        // function code 65
+        if (functionCode === 65) {
+            const quantityOfParameters = data.readUInt8(2);
+            // TODO: get all parameter numbers from request
+
+            // if length is bad, ignore message
+            if (data.length !== 3 + 2 * quantityOfParameters + 2) {
+                return;
+            }
+
+            // build answer
+            buffer = Buffer.alloc(4 + 2 * quantityOfParameters + 2);
+            buffer.writeUInt8(quantityOfParameters * 2, 2);
+            buffer.writeUInt16BE(0, 3);
+
+            // read registers
+            for (i = 0; i < quantityOfParameters; i++) {
+                buffer.writeUInt16BE(this._registers[i], 5 + i * 2);
+            }
         }
 
         // send data back

@@ -83,6 +83,7 @@ const addPromiseAPI = function(Modbus) {
     cl.writeRegisters = _convert(cl.writeFC16);
     cl.readFileRecords = _convert(cl.writeFC20);
     cl.readDeviceIdentification = _convert(cl.writeFC43);
+    cl.readCompressed = _convert(cl.writeFC65);
 };
 
 /**

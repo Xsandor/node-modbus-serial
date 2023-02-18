@@ -17,6 +17,9 @@ export class ModbusRTU {
 
   writeFC15(address: number, dataAddress: number, states: Array<boolean>, next: NodeStyleCallback<WriteMultipleResult>): void;
   writeFC16(address: number, dataAddress: number, values: Array<number>, next: NodeStyleCallback<WriteMultipleResult>): void;
+  writeFC20(address: number, fileNumber: number, recordNumber: number, next: NodeStyleCallback<WriteMultipleResult>): void
+  writeFC43(address: number, deviceIdCode: number, objectId: number, next: NodeStyleCallback<WriteMultipleResult>): void;
+  writeFC65(address: number, parameterNumbers: Array<number>, next: NodeStyleCallback<WriteMultipleResult>): void;
 
   // Connection shorthand API
   connectRTU(path: string, options: SerialPortOptions, next: Function): void;
@@ -58,9 +61,11 @@ export class ModbusRTU {
   writeCoils(dataAddress: number, states: Array<boolean>): Promise<WriteMultipleResult>;
   writeRegister(dataAddress: number, value: number): Promise<WriteRegisterResult>;
   writeRegisters(dataAddress: number, values: Array<number> | Buffer): Promise<WriteMultipleResult>; // 16
-
-  on(event: 'close', listener: () => unknown): this;
+  readFileRecords(fileNumber: number, recordNumber: number): Promise<ReadFileRecordsResult>;
   readDeviceIdentification(deviceIdCode: number, objectId: number): Promise<ReadDeviceIdentificationResult>;
+  readCompressed(parameterNumbers: Array<number>): Promise<ReadCompressedResult>;
+  
+  on(event: 'close', listener: () => unknown): this;
 
   isOpen: boolean;
 }
@@ -94,9 +99,20 @@ export interface WriteMultipleResult {
   length: number;
 }
 
+export interface ReadFileRecordResult {
+  data: number[];
+  length: number;
+}
+
 export interface ReadDeviceIdentificationResult {
   data: string[];
   conformityLevel: number;
+}
+
+export interface ReadCompressedResult {
+  data: number[];
+  errorFlags: number;
+  buffer: Buffer;
 }
 
 export interface SerialPortOptions {
