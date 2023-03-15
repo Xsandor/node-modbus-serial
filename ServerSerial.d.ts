@@ -4,7 +4,7 @@ import { FCallback } from './ServerTCP'
 import * as events from 'events';
 
 export class ServerSerial extends events.EventEmitter {
-  constructor(vector: ModbusServerVector, options: SerialServerOptions, serialportOptions: SerialPortOptions);
+  constructor(vector: ModbusServerVector, options: SerialServerOptions, serialportOptions?: SerialPortOptions);
   close(cb: FCallback): void;
 }
 
