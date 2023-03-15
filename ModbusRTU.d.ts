@@ -63,7 +63,7 @@ export class ModbusRTU {
   writeRegister(dataAddress: number, value: number): Promise<WriteRegisterResult>;
   writeRegisterEnron(dataAddress: number, value: number): Promise<WriteRegisterResult>;
   writeRegisters(dataAddress: number, values: Array<number> | Buffer): Promise<WriteMultipleResult>; // 16
-  readFileRecords(fileNumber: number, recordNumber: number): Promise<ReadFileRecordsResult>;
+  readFileRecords(fileNumber: number, recordNumber: number): Promise<ReadFileRecordResult>;
   readDeviceIdentification(deviceIdCode: number, objectId: number): Promise<ReadDeviceIdentificationResult>;
   readCompressed(parameterNumbers: Array<number>): Promise<ReadCompressedResult>;
   
