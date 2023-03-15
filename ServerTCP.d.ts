@@ -53,5 +53,5 @@ export declare interface ServerTCP {
     on(event: 'initialized', listener: FCallback): this;
 }
 
-type FCallbackVal<T> = (err: Error | null, value: T) => void;
-type FCallback = (err: Error | null) => void;
+export type FCallbackVal<T> = (err: Error | null, value: T) => void;
+export type FCallback = (err: Error | null) => void;
