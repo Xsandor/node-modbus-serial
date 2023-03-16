@@ -86,12 +86,12 @@ function _handlePromiseOrValue(promiseOrValue, cb) {
  * @private
  */
 function _handleReadCoilsOrInputDiscretes(requestBuffer, vector, unitID, callback, fc) {
-    const address = requestBuffer.readUInt16BE(2);
-    const length = requestBuffer.readUInt16BE(4);
-
     if (_errorRequestBufferLength(requestBuffer)) {
         return;
     }
+
+    const address = requestBuffer.readUInt16BE(2);
+    const length = requestBuffer.readUInt16BE(4);
 
     // build answer
     const dataBytes = parseInt((length - 1) / 8 + 1);
@@ -205,13 +205,14 @@ function _handleReadCoilsOrInputDiscretes(requestBuffer, vector, unitID, callbac
  * @private
  */
 function _handleReadMultipleRegisters(requestBuffer, vector, unitID, callback) {
+    if (_errorRequestBufferLength(requestBuffer)) {
+        return;
+    }
+
     const valueSize = 2;
     const address = requestBuffer.readUInt16BE(2);
     const length = requestBuffer.readUInt16BE(4);
 
-    if (_errorRequestBufferLength(requestBuffer)) {
-        return;
-    }
 
     // build answer
     const responseBuffer = Buffer.alloc(3 + (length * valueSize) + 2);
@@ -338,6 +339,10 @@ function _handleReadMultipleRegisters(requestBuffer, vector, unitID, callback) {
  * @private
  */
 function _handleReadMultipleRegistersEnron(requestBuffer, vector, unitID, enronTables, callback) {
+    if (_errorRequestBufferLength(requestBuffer)) {
+        return;
+    }
+
     const valueSize = 4;
     const address = requestBuffer.readUInt16BE(2);
     const length = requestBuffer.readUInt16BE(4);
@@ -347,9 +352,6 @@ function _handleReadMultipleRegistersEnron(requestBuffer, vector, unitID, enronT
         return _handleReadMultipleRegisters(requestBuffer, vector, unitID, callback);
     }
 
-    if (_errorRequestBufferLength(requestBuffer)) {
-        return;
-    }
 
     // build answer
     const responseBuffer = Buffer.alloc(3 + (length * valueSize) + 2);
@@ -475,12 +477,12 @@ function _handleReadMultipleRegistersEnron(requestBuffer, vector, unitID, enronT
  * @private
  */
 function _handleReadInputRegisters(requestBuffer, vector, unitID, callback) {
-    const address = requestBuffer.readUInt16BE(2);
-    const length = requestBuffer.readUInt16BE(4);
-
     if (_errorRequestBufferLength(requestBuffer)) {
         return;
     }
+
+    const address = requestBuffer.readUInt16BE(2);
+    const length = requestBuffer.readUInt16BE(4);
 
     // build answer
     const responseBuffer = Buffer.alloc(3 + length * 2 + 2);
@@ -598,12 +600,12 @@ function _handleReadInputRegisters(requestBuffer, vector, unitID, callback) {
  * @private
  */
 function _handleWriteCoil(requestBuffer, vector, unitID, callback) {
-    const address = requestBuffer.readUInt16BE(2);
-    const state = requestBuffer.readUInt16BE(4);
-
     if (_errorRequestBufferLength(requestBuffer)) {
         return;
     }
+
+    const address = requestBuffer.readUInt16BE(2);
+    const state = requestBuffer.readUInt16BE(4);
 
     // build answer
     const responseBuffer = Buffer.alloc(8);
@@ -656,12 +658,12 @@ function _handleWriteCoil(requestBuffer, vector, unitID, callback) {
  * @private
  */
 function _handleWriteSingleRegister(requestBuffer, vector, unitID, callback) {
-    const address = requestBuffer.readUInt16BE(2);
-    const value = requestBuffer.readUInt16BE(4);
-
     if (_errorRequestBufferLength(requestBuffer)) {
         return;
     }
+
+    const address = requestBuffer.readUInt16BE(2);
+    const value = requestBuffer.readUInt16BE(4);
 
     // build answer
     const responseBuffer = Buffer.alloc(8);
@@ -714,16 +716,16 @@ function _handleWriteSingleRegister(requestBuffer, vector, unitID, callback) {
  * @private
  */
 function _handleWriteSingleRegisterEnron(requestBuffer, vector, unitID, enronTables, callback) {
+    if (_errorRequestBufferLengthEnron(requestBuffer)) {
+        return;
+    }
+
     const address = requestBuffer.readUInt16BE(2);
     const value = requestBuffer.readUInt32BE(4);
 
     // Fall back to 16 bit for short integer variables
     if (address >= enronTables.shortRange[0] && address <= enronTables.shortRange[1]) {
         return _handleWriteSingleRegister(requestBuffer, vector, unitID, callback);
-    }
-
-    if (_errorRequestBufferLengthEnron(requestBuffer)) {
-        return;
     }
 
     // build answer
