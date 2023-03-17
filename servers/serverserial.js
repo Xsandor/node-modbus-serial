@@ -148,6 +148,10 @@ function _parseModbusBuffer(requestBuffer, vector, serverUnitID, sockWriter, opt
     modbusSerialDebug("request for function code " + functionCode);
     const cb = _callbackFactory(unitID, functionCode, sockWriter);
 
+    console.log('Inside _parseModbusBuffer')
+    console.log(this)
+    console.log(this.emit)
+
     switch (parseInt(functionCode)) {
         case 1:
         case 2:
@@ -246,16 +250,8 @@ class ServerSerial extends EventEmitter {
         // create a server unit id
         const serverUnitID = options.unitID || UNIT_ID;
 
-        modbus._serverPath.on("open", function() {
-            console.log('* _serverPath open!')
-
-            modbus._serverPath.once("close", function() {
-                console.log('* _serverPath closed!')
-            });
-        });
-
-        modbus._server.on("open", function() {
-            console.log('* _server open!')
+        modbus._serverPath.on("open", () => {
+            modbus.emit('open')
 
             modbusSerialDebug({
                 action: "connected"
@@ -265,14 +261,14 @@ class ServerSerial extends EventEmitter {
             });
 
             modbus._server.once("close", function() {
-                console.log('* _server closed!')
+                modbus.emit('close')
                 modbusSerialDebug({
                     action: "closed"
                 });
             });
         });
 
-        modbus._server.on("data", function(data) {
+        modbus._server.on("data", (data) => {
             let recvBuffer = Buffer.from([]);
 
             modbusSerialDebug({ action: "socket data", data: data });
@@ -310,7 +306,7 @@ class ServerSerial extends EventEmitter {
 
                 // parse the modbusRTU buffer
                 setTimeout(
-                    _parseModbusBuffer.bind(this,
+                    _parseModbusBuffer.bind(modbus,
                         requestBuffer,
                         vector,
                         serverUnitID,
