@@ -246,11 +246,16 @@ class ServerSerial extends EventEmitter {
         // create a server unit id
         const serverUnitID = options.unitID || UNIT_ID;
 
-        // remember open sockets
-        modbus.socks = new Map();
+        modbus._serverPath.on("open", function() {
+            console.log('* _serverPath open!')
+
+            modbus._serverPath.once("close", function() {
+                console.log('* _serverPath closed!')
+            });
+        });
 
         modbus._server.on("open", function() {
-            modbus.socks.set(modbus._server, 0);
+            console.log('* _server open!')
 
             modbusSerialDebug({
                 action: "connected"
@@ -259,13 +264,12 @@ class ServerSerial extends EventEmitter {
                 // localPort: sock.localPort
             });
 
-            modbus._server.on("close", function() {
+            modbus._server.once("close", function() {
+                console.log('* _server closed!')
                 modbusSerialDebug({
                     action: "closed"
                 });
-                modbus.socks.delete(modbus._server);
             });
-
         });
 
         modbus._server.on("data", function(data) {
@@ -342,10 +346,6 @@ class ServerSerial extends EventEmitter {
         if (modbus._server) {
             modbus._server.removeAllListeners("data");
             modbus._serverPath.close(callback);
-
-            modbus.socks.forEach(function(e, sock) {
-                sock.destroy();
-            });
 
             modbusSerialDebug({ action: "close server" });
         } else {
