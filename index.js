@@ -40,7 +40,11 @@ const modbusErrorMessages = [
     "Illegal data value (value cannot be written to this register)",
     "Slave device failure (device reports internal error)",
     "Acknowledge (requested data will be available later)",
-    "Slave device busy (retry request again later)"
+    "Slave device busy (retry request again later)",
+    "Negative acknowledge (device cannot perform action)",
+    "Memory parity error (failed to read from memory)",
+    "Gateway path unavailable",
+    "Gateway target device failed to respond"
 ];
 
 const PortNotOpenError = function() {
