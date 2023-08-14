@@ -1041,7 +1041,7 @@ class ModbusRTU extends EventEmitter {
      * @param {number} recordNumber the record number. // TODO: Write better description
      * @param {Function} next;
      */
-    writeFC20(address, fileNumber, recordNumber, next) {
+    writeFC20(address, fileNumber, recordNumber, referenceType = 6, next) {
         if (this.isOpen !== true) {
             if (next) next(new PortNotOpenError());
             return;
@@ -1067,7 +1067,7 @@ class ModbusRTU extends EventEmitter {
         buf.writeUInt8(address, 0);
         buf.writeUInt8(code, 1);
         buf.writeUInt8(byteCount, 2);
-        buf.writeUInt8(6, 3); // ReferenceType
+        buf.writeUInt8(referenceType, 3); // ReferenceType
         buf.writeUInt16BE(fileNumber, 4);
         buf.writeUInt16BE(recordNumber, 6);
         buf.writeUInt8(chunck, 9);
