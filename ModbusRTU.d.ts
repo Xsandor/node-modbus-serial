@@ -17,7 +17,7 @@ export class ModbusRTU {
 
   writeFC15(address: number, dataAddress: number, states: Array<boolean>, next: NodeStyleCallback<WriteMultipleResult>): void;
   writeFC16(address: number, dataAddress: number, values: Array<number>, next: NodeStyleCallback<WriteMultipleResult>): void;
-  writeFC20(address: number, fileNumber: number, recordNumber: number, referenceType?: number, next: NodeStyleCallback<WriteMultipleResult>): void
+  writeFC20(address: number, fileNumber: number, recordNumber: number, referenceType: number, next: NodeStyleCallback<WriteMultipleResult>): void
   writeFC43(address: number, deviceIdCode: number, objectId: number, next: NodeStyleCallback<WriteMultipleResult>): void;
   writeFC65(address: number, parameterNumbers: Array<number>, next: NodeStyleCallback<WriteMultipleResult>): void;
 
