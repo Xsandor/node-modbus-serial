@@ -528,6 +528,7 @@ function _onReceive(data) {
             _readFC16(data, next);
             break;
         case 20:
+            modbusSerialDebug({ action: "readFC20" });
             _readFC20(data, transaction.next);
             break;
         case 43:
@@ -1039,9 +1040,10 @@ class ModbusRTU extends EventEmitter {
      * @param {number} address the slave unit address.
      * @param {number} fileNumber the file number. // TODO: Write better description
      * @param {number} recordNumber the record number. // TODO: Write better description
+     * @param {number} referenceType the reference type, old default was 6. // TODO: Write better description
      * @param {Function} next;
      */
-    writeFC20(address, fileNumber, recordNumber, referenceType = 6, next) {
+    writeFC20(address, fileNumber, recordNumber, referenceType, next) {
         if (this.isOpen !== true) {
             if (next) next(new PortNotOpenError());
             return;
@@ -1053,7 +1055,6 @@ class ModbusRTU extends EventEmitter {
         }
         // function code defaults to 20
         const code = 20;
-        const codeLength = 10;
         const byteCount = 7;
         const chunck = 100;
 
@@ -1063,7 +1064,10 @@ class ModbusRTU extends EventEmitter {
             lengthUnknown: true,
             next: next
         };
+
+        const codeLength = 10;
         const buf = Buffer.alloc(codeLength + 2); // add 2 crc bytes
+
         buf.writeUInt8(address, 0);
         buf.writeUInt8(code, 1);
         buf.writeUInt8(byteCount, 2);
@@ -1071,7 +1075,11 @@ class ModbusRTU extends EventEmitter {
         buf.writeUInt16BE(fileNumber, 4);
         buf.writeUInt16BE(recordNumber, 6);
         buf.writeUInt8(chunck, 9);
+
+        // add crc bytes to buffer
         buf.writeUInt16LE(crc16(buf.slice(0, -2)), codeLength);
+
+        // write buffer to serial port
         _writeBufferToPort.call(this, buf, this._port._transactionIdWrite);
     }
 
