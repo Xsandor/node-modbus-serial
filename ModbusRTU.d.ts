@@ -102,7 +102,7 @@ export interface WriteMultipleResult {
 }
 
 export interface ReadFileRecordResult {
-  data: number[];
+  data: number[] | string;
   length: number;
 }
 
