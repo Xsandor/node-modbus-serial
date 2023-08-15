@@ -217,12 +217,20 @@ function _readFC16(data, next) {
 function _readFC20(data, next) {
     // const fileRespLength = parseInt(data.readUInt8(2));
     const subRequestLength = parseInt(data.readUInt8(3));
+    const subRequestRefType = parseInt(data.readUInt8(4));
 
-    const result = [];
+    let result;
 
-    for (let i = 0; i < subRequestLength; i++) {
-        const reg = data.readUInt8(4 + i);
-        result.push(reg);
+    if (subRequestRefType === 7) {
+        // read data as ASCII string
+        result = data.toString("ascii", 5, 5 + subRequestLength - 1);
+    } else {
+        result = [];
+
+        for (let i = 0; i < subRequestLength - 1; i++) {
+            const reg = data.readUInt8(5 + i);
+            result.push(reg);
+        }
     }
 
     if(next)
