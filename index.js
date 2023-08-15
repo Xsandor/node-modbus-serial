@@ -1038,12 +1038,13 @@ class ModbusRTU extends EventEmitter {
     /**
      * Write Modbus "Read Device Identification" (FC=20) to serial port
      * @param {number} address the slave unit address.
-     * @param {number} fileNumber the file number. // TODO: Write better description
-     * @param {number} recordNumber the record number. // TODO: Write better description
-     * @param {number} referenceType the reference type, old default was 6. // TODO: Write better description
+     * @param {number} fileNumber the file number (1-65535) (for legacy support: 1-10). // TODO: Write better description
+     * @param {number} recordNumber the record number (0-9999). // TODO: Write better description
+     * @param {number} recordLength no. of record registers to read (each is 2 bytes) (old default was 100). // TODO: Write better description
+     * @param {number} referenceType the reference type, 6 for standard requests. // TODO: Write better description
      * @param {Function} next;
      */
-    writeFC20(address, fileNumber, recordNumber, referenceType, next) {
+    writeFC20(address, fileNumber, recordNumber, recordLength, referenceType, next) {
         if (this.isOpen !== true) {
             if (next) next(new PortNotOpenError());
             return;
@@ -1055,13 +1056,26 @@ class ModbusRTU extends EventEmitter {
         }
         // function code defaults to 20
         const code = 20;
-        const byteCount = 7;
-        const chunck = 100;
+        const byteCount = 7; // Fixed to 7 for a request of a single file record, to support multiple records (sub-requests), this needs to be calculated
+
+        // We can calculate the response length
+        // 1 byte for address
+        // 1 byte for function code
+        // 1 byte for response data length
+        //   For each subrequest there is
+        //      1 byte for subRequestLength
+        //      1 byte for referenceType
+        //      2x bytes for each record we have requested
+        // 2 bytes for CRC
+        // Currently we only do a single subrequest, and if read 8 registers (16 bytes) the total response length will be 5 + 16 + 2 = 23 bytes
+        const responseLength = 5 + recordLength * 2 + 2; // 9 bytes for the response header, 2 bytes per record register
+        modbusSerialDebug({ action: "FC20: Expecting a response of " + responseLength + " bytes" });
 
         this._transactions[this._port._transactionIdWrite] = {
             nextAddress: address,
             nextCode: code,
-            lengthUnknown: true,
+            nextLength: responseLength,
+            // lengthUnknown: true,
             next: next
         };
 
@@ -1074,7 +1088,7 @@ class ModbusRTU extends EventEmitter {
         buf.writeUInt8(referenceType, 3); // ReferenceType
         buf.writeUInt16BE(fileNumber, 4);
         buf.writeUInt16BE(recordNumber, 6);
-        buf.writeUInt8(chunck, 9);
+        buf.writeUInt8(recordLength, 9);
 
         // add crc bytes to buffer
         buf.writeUInt16LE(crc16(buf.slice(0, -2)), codeLength);

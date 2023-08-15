@@ -29,7 +29,7 @@ describe("Promise", function() {
             expect(modbusRTU.writeCoil(address, value)).to.be.instanceOf(Promise);
             expect(modbusRTU.writeRegister(address, value)).to.be.instanceOf(Promise);
             expect(modbusRTU.writeRegisters(address, [value])).to.be.instanceOf(Promise);
-            expect(modbusRTU.readFileRecords(fileNumber, recordNumber)).to.be.instanceOf(Promise);
+            expect(modbusRTU.readFileRecords(fileNumber, recordNumber, 100, 6)).to.be.instanceOf(Promise);
             expect(modbusRTU.readDeviceIdentification(deviceIdCode, objectId)).to.be.instanceOf(Promise);
             expect(modbusRTU.readCompressed(parameterNumbers)).to.be.instanceOf(Promise);
         });
