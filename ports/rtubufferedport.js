@@ -9,9 +9,15 @@ const EXCEPTION_LENGTH = 5;
 const MIN_DATA_LENGTH = 6;
 const MAX_BUFFER_LENGTH = 256;
 const CRC_LENGTH = 2;
+const READ_FILE_RECORD_FUNCTION_CODE = 20;
 const READ_DEVICE_IDENTIFICATION_FUNCTION_CODE = 43;
 const LENGTH_UNKNOWN = "unknown";
 const BITS_TO_NUM_OF_OBJECTS = 7;
+
+// The response length for read file is indicated at the third byte of the response
+// And the total length of the response is the length of the response + 1 (addr) + 1 (function) + 1 (the totalbyte) + 2 (CRC)
+// So if the 3rd byte is 18, the total length is 18 + 5 = 23
+const BYTES_TO_READ_FILE_TOTAL_LENGTH = 3;
 
 // Helper function -> Bool
 // BIT | TYPE
@@ -122,6 +128,22 @@ class RTUBufferedPort extends EventEmitter {
                         self._emitData(i, result.bufLength);
                         return;
                     }
+                } else if (functionCode === self._cmd && functionCode === READ_FILE_RECORD_FUNCTION_CODE) {
+                    if (bufferLength <= BYTES_TO_READ_FILE_TOTAL_LENGTH + i) {
+                        modbusSerialDebug({ action: "FC20: has not received enough bytes to know length of response" });
+                        return;
+                    }
+                    const responseDataLength = self._buffer[BYTES_TO_READ_FILE_TOTAL_LENGTH - 1 + i];
+                    modbusSerialDebug({ action: "FC20: responseDataLength should be" + responseDataLength + " bytes" });
+                    const calculatedExpectedLength = 1 + 1 + 1 + responseDataLength + CRC_LENGTH;
+                    modbusSerialDebug({ action: "FC20: total buffer should be" + calculatedExpectedLength + " bytes" });
+                    if (bufferLength >= calculatedExpectedLength) {
+                        modbusSerialDebug({ action: "FC20: has received the full respone, emitting data" });
+                        self._emitData(i, calculatedExpectedLength);
+                        return;
+                    }
+
+                    modbusSerialDebug({ action: "FC20: has not received the full respone, waiting for more data" });
                 } else {
                     if (functionCode === self._cmd && i + expectedLength <= bufferLength) {
                         self._emitData(i, expectedLength);
@@ -216,7 +238,11 @@ class RTUBufferedPort extends EventEmitter {
             case 16:
                 this._length = 6 + 2;
                 break;
-            case 43:
+            case READ_FILE_RECORD_FUNCTION_CODE:
+                // This function requests a file with unknown length, we will get the length in the response
+                this._length = LENGTH_UNKNOWN;
+                break;
+            case READ_DEVICE_IDENTIFICATION_FUNCTION_CODE:
                 // this function is super special
                 // you know the format of the code response
                 // and you need to continuously check that all of the data has arrived before emitting
