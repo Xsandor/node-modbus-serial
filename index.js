@@ -223,7 +223,7 @@ function _readFC20(data, next) {
 
     if (subRequestRefType === 7) {
         // read data as ASCII string
-        result = data.toString("ascii", 5, 5 + subRequestLength - 1);
+        result = data.toString("ascii", 5, 5 + subRequestLength - 1).replace(/\0.*$/g, "");
     } else {
         result = [];
 
