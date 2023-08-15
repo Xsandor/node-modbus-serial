@@ -23,19 +23,15 @@
  * @private
  */
 const _convert = function(f) {
-    const converted = function(address, arg, next) {
+    const converted = function(...args) {
         const client = this;
         const id = this._unitID;
+        const next = args[args.length - 1]; // The last argument is the callback or promise resolve function
 
-        /* the function check for a callback
-         * if we have a callback, use it
-         * o/w build a promise.
-         */
-        if (next) {
-            // if we have a callback, use the callback
-            f.bind(client)(id, address, arg, next);
+        if (typeof next === "function") {
+            // Use the callback
+            f.bind(client)(id, ...args.slice(0, -1), next);
         } else {
-            // o/w use  a promise
             const promise = new Promise(function(resolve, reject) {
                 function cb(err, data) {
                     if (err) {
@@ -45,7 +41,7 @@ const _convert = function(f) {
                     }
                 }
 
-                f.bind(client)(id, address, arg, cb);
+                f.bind(client)(id, ...args, cb);
             });
 
             return promise;
@@ -54,6 +50,38 @@ const _convert = function(f) {
 
     return converted;
 };
+// const _convert = function(f) {
+//     const converted = function(address, arg, next) {
+//         const client = this;
+//         const id = this._unitID;
+
+//         /* the function check for a callback
+//          * if we have a callback, use it
+//          * o/w build a promise.
+//          */
+//         if (next) {
+//             // if we have a callback, use the callback
+//             f.bind(client)(id, address, arg, next);
+//         } else {
+//             // o/w use  a promise
+//             const promise = new Promise(function(resolve, reject) {
+//                 function cb(err, data) {
+//                     if (err) {
+//                         reject(err);
+//                     } else {
+//                         resolve(data);
+//                     }
+//                 }
+
+//                 f.bind(client)(id, address, arg, cb);
+//             });
+
+//             return promise;
+//         }
+//     };
+
+//     return converted;
+// };
 
 /**
  * Adds promise API to a Modbus object.
