@@ -209,19 +209,24 @@ function _readFC16(data, next) {
 /**
  * Parse  the data fro Modbus -
  * Read File Records
+ * Currently only parses the first subRequest
  *
  * @param {Buffer4} buffer
  * @param {Function} next
  */
-function _readFC20(data,  next) {
-    const fileRespLength = parseInt(data.readUInt8(2));
+function _readFC20(data, next) {
+    // const fileRespLength = parseInt(data.readUInt8(2));
+    const subRequestLength = parseInt(data.readUInt8(3));
+
     const result = [];
-    for (let i = 5; i < fileRespLength + 5; i++) {
-        const reg = data.readUInt8(i);
+
+    for (let i = 0; i < subRequestLength; i++) {
+        const reg = data.readUInt8(4 + i);
         result.push(reg);
     }
+
     if(next)
-        next(null, { "data": result, "length": fileRespLength });
+        next(null, { "data": result, "length": subRequestLength });
 }
 
 /**
