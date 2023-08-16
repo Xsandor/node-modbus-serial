@@ -288,8 +288,8 @@ function _readFC65(data, next) {
     const errorFlags = data.readUInt16BE(3); // should be parsed as an array of bits
     const contents = [];
 
-    for (let i = 0; i <= (length - 2); i += 2) {
-        const reg = data.readUInt16BE(i + 5);
+    for (let i = 0; i < (length - 2); i += 2) {
+        const reg = data.readUInt16BE(5 + i);
         contents.push(reg);
     }
 
