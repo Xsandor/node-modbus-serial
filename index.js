@@ -1175,7 +1175,7 @@ class ModbusRTU extends EventEmitter {
         this._transactions[this._port._transactionIdWrite] = {
             nextAddress: address,
             nextCode: code,
-            nextLength: 4 + 2 * quantityOfParameters + 2, // The expected length of the response
+            nextLength: 4 + 2 * quantityOfParameters + 3, // The expected length of the response
             next: next
         };
 

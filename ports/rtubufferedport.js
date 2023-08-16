@@ -253,7 +253,7 @@ class RTUBufferedPort extends EventEmitter {
                 break;
             case READ_COMPRESSED_FUNCTION_CODE:
                 length = data.readUInt8(2); // quantityOfParameters
-                this._length = 4 + 2 * length + 2;
+                this._length = 4 + 2 * length + 3;
                 modbusSerialDebug({ action: "FC65: Setting expected response length to " + this._length + " bytes for buffered port" });
                 break;
             default:
