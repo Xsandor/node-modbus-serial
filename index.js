@@ -551,6 +551,7 @@ function _onReceive(data) {
         case 65:
             // read compressed
             _readFC65(data, next);
+            break;
     }
 }
 

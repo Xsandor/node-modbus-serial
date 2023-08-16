@@ -11,6 +11,7 @@ const MAX_BUFFER_LENGTH = 256;
 const CRC_LENGTH = 2;
 const READ_FILE_RECORD_FUNCTION_CODE = 20;
 const READ_DEVICE_IDENTIFICATION_FUNCTION_CODE = 43;
+const READ_COMPRESSED_FUNCTION_CODE = 65;
 const LENGTH_UNKNOWN = "unknown";
 const BITS_TO_NUM_OF_OBJECTS = 7;
 
@@ -240,7 +241,7 @@ class RTUBufferedPort extends EventEmitter {
                 break;
             case READ_FILE_RECORD_FUNCTION_CODE:
                 // This function requests a file with unknown length, we will get the length in the response
-                modbusSerialDebug({ action: "FC20: Setting response length to unknown for buffered port" });
+                // modbusSerialDebug({ action: "FC20: Setting response length to unknown for buffered port" });
                 this._length = LENGTH_UNKNOWN;
                 break;
             case READ_DEVICE_IDENTIFICATION_FUNCTION_CODE:
@@ -249,6 +250,11 @@ class RTUBufferedPort extends EventEmitter {
                 // and you need to continuously check that all of the data has arrived before emitting
                 // see onData for more info.
                 this._length = LENGTH_UNKNOWN;
+                break;
+            case READ_COMPRESSED_FUNCTION_CODE:
+                length = data.readUInt8(2); // quantityOfParameters
+                this._length = 4 + 2 * length + 2;
+                modbusSerialDebug({ action: "FC65: Setting expected response length to " + this._length + " bytes for buffered port" });
                 break;
             default:
                 // raise and error ?
