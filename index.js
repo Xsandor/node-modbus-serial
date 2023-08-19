@@ -225,12 +225,14 @@ function _readFC20(data, next) {
         // read data as ASCII string
         result = data.toString("ascii", 5, 5 + subRequestLength - 1).replace(/\0.*$/g, "");
     } else {
-        result = [];
+        // result = [];
 
-        for (let i = 0; i < subRequestLength - 1; i++) {
-            const reg = data.readUInt8(5 + i);
-            result.push(reg);
-        }
+        // for (let i = 0; i < subRequestLength - 1; i++) {
+        //     const reg = data.readUInt8(5 + i);
+        //     result.push(reg);
+        // }
+
+        result = data.slice(5, 5 + subRequestLength - 1);
     }
 
     if(next)
