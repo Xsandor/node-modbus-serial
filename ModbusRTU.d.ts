@@ -14,6 +14,7 @@ export class ModbusRTU {
   writeFC4(address: number, dataAddress: number, length: number, next: NodeStyleCallback<ReadRegisterResult>): void;
   writeFC5(address: number, dataAddress: number, state: boolean, next: NodeStyleCallback<WriteCoilResult>): void;
   writeFC6(address: number, dataAddress: number, value: number, next: NodeStyleCallback<WriteRegisterResult>): void;
+  writeFC7(address: number, next: NodeStyleCallback<WriteRegisterResult>): void;
 
   writeFC15(address: number, dataAddress: number, states: Array<boolean>, next: NodeStyleCallback<WriteMultipleResult>): void;
   writeFC16(address: number, dataAddress: number, values: Array<number>, next: NodeStyleCallback<WriteMultipleResult>): void;
@@ -64,7 +65,7 @@ export class ModbusRTU {
   writeRegisterEnron(dataAddress: number, value: number): Promise<WriteRegisterResult>;
   writeRegisters(dataAddress: number, values: Array<number> | Buffer): Promise<WriteMultipleResult>; // 16
   readFileRecords(fileNumber: number, recordNumber: number, recordLength: number, referenceType: number): Promise<ReadFileRecordResult>;
-  
+  readExceptionStatus(): Promise<number>;
   readDeviceIdentification(deviceIdCode: number, objectId: 1 | 2 | 3 | 4): Promise<ReadDeviceIdentificationResult>;
   readCompressed(parameterNumbers: Array<number>): Promise<ReadCompressedResult>;
   

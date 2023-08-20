@@ -177,6 +177,20 @@ function _readFC6(data, next) {
 }
 
 /**
+ * Parse the data for a Modbus -
+ * Read Exceptio Status (FC=07)
+ *
+ * @param {Buffer} data the data buffer to parse.
+ * @param {Function} next the function to call next.
+ */
+function _readFC7(data, next) {
+    const value = data.readInt8(2);
+
+    if (next)
+        next(null, value);
+}
+
+/**
  * Parse the data for a Modbus (Enron) -
  * Preset Single Registers (FC=06)
  *
@@ -535,6 +549,9 @@ function _onReceive(data) {
             } else {
                 _readFC6(data, next);
             }
+            break;
+        case 7:
+            _readFC7(data, next);
             break;
         case 15:
         case 16:
@@ -919,6 +936,40 @@ class ModbusRTU extends EventEmitter {
         } else {
             buf.writeUInt16BE(value, 4);
         }
+
+        // add crc bytes to buffer
+        buf.writeUInt16LE(crc16(buf.slice(0, -2)), codeLength);
+
+        // write buffer to serial port
+        _writeBufferToPort.call(this, buf, this._port._transactionIdWrite);
+    }
+
+    /**
+     * Write a Modbus "Read Exception Status" (FC=7) to serial port.
+     *
+     * @param {number} address the slave unit address.
+     * @param {Function} next the function to call next.
+     */
+    writeFC7(address, next) {
+        // check port is actually open before attempting write
+        if (this.isOpen !== true) {
+            if (next) next(new PortNotOpenError());
+            return;
+        }
+        const code = 7;
+
+        // set state variables
+        this._transactions[this._port._transactionIdWrite] = {
+            nextAddress: address,
+            nextCode: code,
+            nextLength: 5,
+            next: next
+        };
+
+        const codeLength = 2;
+        const buf = Buffer.alloc(codeLength + 2); // add 2 crc bytes
+        buf.writeUInt8(address, 0);
+        buf.writeUInt8(code, 1);
 
         // add crc bytes to buffer
         buf.writeUInt16LE(crc16(buf.slice(0, -2)), codeLength);

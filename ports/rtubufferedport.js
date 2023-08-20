@@ -239,6 +239,9 @@ class RTUBufferedPort extends EventEmitter {
             case 16:
                 this._length = 6 + 2;
                 break;
+            case 7:
+                this._length = 5;
+                break;
             case READ_FILE_RECORD_FUNCTION_CODE:
                 // This function requests a file with unknown length, we will get the length in the response
                 // modbusSerialDebug({ action: "FC20: Setting response length to unknown for buffered port" });
