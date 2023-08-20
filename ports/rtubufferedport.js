@@ -6,7 +6,7 @@ const modbusSerialDebug = require("debug")("modbus-serial");
 
 /* TODO: const should be set once, maybe */
 const EXCEPTION_LENGTH = 5;
-const MIN_DATA_LENGTH = 6;
+const MIN_DATA_LENGTH = 5;
 const MAX_BUFFER_LENGTH = 256;
 const CRC_LENGTH = 2;
 const READ_FILE_RECORD_FUNCTION_CODE = 20;
