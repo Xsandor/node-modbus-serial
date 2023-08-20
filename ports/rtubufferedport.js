@@ -6,7 +6,7 @@ const modbusSerialDebug = require("debug")("modbus-serial");
 
 /* TODO: const should be set once, maybe */
 const EXCEPTION_LENGTH = 5;
-const MIN_DATA_LENGTH = 5;
+const MIN_DATA_LENGTH = 4;
 const MAX_BUFFER_LENGTH = 256;
 const CRC_LENGTH = 2;
 const READ_FILE_RECORD_FUNCTION_CODE = 20;
@@ -211,7 +211,7 @@ class RTUBufferedPort extends EventEmitter {
      */
     write(data) {
         if(data.length < MIN_DATA_LENGTH) {
-            modbusSerialDebug("expected length of data is to small - minimum is " + MIN_DATA_LENGTH);
+            modbusSerialDebug(`expected length of data (${data.length}) is to small - minimum is ${MIN_DATA_LENGTH}`);
             return;
         }
 
