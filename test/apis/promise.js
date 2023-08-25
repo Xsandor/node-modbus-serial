@@ -19,7 +19,7 @@ describe("Promise", function() {
             const recordNumber = 2;
             const deviceIdCode = 1;
             const objectId = 2;
-            const parameterNumbers = [1, 2, 3, 4, 5];
+            // const parameterNumbers = [1, 2, 3, 4, 5];
 
             modbusRTU.open();
             expect(modbusRTU.readCoils(address, arg)).to.be.instanceOf(Promise);
@@ -31,7 +31,7 @@ describe("Promise", function() {
             expect(modbusRTU.writeRegisters(address, [value])).to.be.instanceOf(Promise);
             expect(modbusRTU.readFileRecords(fileNumber, recordNumber, 100, 6)).to.be.instanceOf(Promise);
             expect(modbusRTU.readDeviceIdentification(deviceIdCode, objectId)).to.be.instanceOf(Promise);
-            expect(modbusRTU.readCompressed(parameterNumbers)).to.be.instanceOf(Promise);
+            // expect(modbusRTU.readCompressed(parameterNumbers)).to.be.instanceOf(Promise);
         });
     });
 

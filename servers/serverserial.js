@@ -123,11 +123,11 @@ function _callbackFactory(unitID, functionCode, sockWriter) {
  * @private
  */
 function _parseModbusBuffer(requestBuffer, vector, serverUnitID, sockWriter, options) {
-    const modbus = this
+    const modbus = this;
 
     // Check requestBuffer length
     if (!requestBuffer || requestBuffer.length < ADDR_LEN) {
-        modbus.emit('log', 'warn', 'Wrong size of request Buffer: ' + requestBuffer.length)
+        modbus.emit("log", "warn", "Wrong size of request Buffer: " + requestBuffer.length);
         modbusSerialDebug("wrong size of request Buffer " + requestBuffer.length);
         return;
     }
@@ -138,7 +138,7 @@ function _parseModbusBuffer(requestBuffer, vector, serverUnitID, sockWriter, opt
 
     // if crc is bad, ignore message
     if (crc !== crc16(requestBuffer.slice(0, -2))) {
-        modbus.emit('log', 'warn', 'Wrong CRC of request Buffer. Expected: ' + crc16(requestBuffer.slice(0, -2)) + ' Got: ' + crc)
+        modbus.emit("log", "warn", "Wrong CRC of request Buffer. Expected: " + crc16(requestBuffer.slice(0, -2)) + " Got: " + crc);
         modbusSerialDebug("wrong CRC of request Buffer");
         return;
     }
@@ -168,11 +168,11 @@ function _parseModbusBuffer(requestBuffer, vector, serverUnitID, sockWriter, opt
             handlers.readInputRegisters(requestBuffer, vector, unitID, cb);
             break;
         case 5:
-            modbus.emit('log', 'info', 'Someone is trying to write a single coil.')
+            modbus.emit("log", "info", "Someone is trying to write a single coil.");
             handlers.writeCoil(requestBuffer, vector, unitID, cb);
             break;
         case 6:
-            modbus.emit('log', 'info', 'Someone is trying to write a single holding register.')
+            modbus.emit("log", "info", "Someone is trying to write a single holding register.");
             if (options && options.enron) {
                 handlers.writeSingleRegisterEnron(requestBuffer, vector, unitID, options.enronTables, cb);
             } else {
@@ -180,18 +180,18 @@ function _parseModbusBuffer(requestBuffer, vector, serverUnitID, sockWriter, opt
             }
             break;
         case 15:
-            modbus.emit('log', 'info', 'Someone is trying to write a multliple coils.')
+            modbus.emit("log", "info", "Someone is trying to write a multliple coils.");
             handlers.forceMultipleCoils(requestBuffer, vector, unitID, cb);
             break;
         case 16:
-            modbus.emit('log', 'info', 'Someone is trying to write a multliple holding registers.')
+            modbus.emit("log", "info", "Someone is trying to write a multliple holding registers.");
             handlers.writeMultipleRegisters(requestBuffer, vector, unitID, cb);
             break;
         case 43:
             handlers.handleMEI(requestBuffer, vector, unitID, cb);
             break;
         default: {
-            modbus.emit('log', 'warn', 'Someoneusing an illegal function code: ' + functionCode + '.')
+            modbus.emit("log", "warn", "Someoneusing an illegal function code: " + functionCode + ".");
             const errorCode = 0x01; // illegal function
 
             // set an error response
@@ -256,7 +256,7 @@ class ServerSerial extends EventEmitter {
         const serverUnitID = options.unitID || UNIT_ID;
 
         modbus._serverPath.on("open", () => {
-            modbus.emit('open')
+            modbus.emit("open");
 
             modbusSerialDebug({
                 action: "connected"
@@ -266,7 +266,7 @@ class ServerSerial extends EventEmitter {
             });
 
             modbus._server.once("close", function() {
-                modbus.emit('close')
+                modbus.emit("close");
                 modbusSerialDebug({
                     action: "closed"
                 });
