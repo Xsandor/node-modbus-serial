@@ -61,6 +61,13 @@ const BadAddressError = function() {
     this.errno = BAD_ADDRESS_ERRNO;
 };
 
+const BroadcastNotAllowedError = function() {
+    Error.captureStackTrace(this, this.constructor);
+    this.name = this.constructor.name;
+    this.message = "Function does not allow broadcast requests";
+    this.errno = BAD_ADDRESS_ERRNO;
+};
+
 const TransactionTimedOutError = function() {
     this.name = this.constructor.name;
     this.message = TRANSACTION_TIMED_OUT_MESSAGE;
@@ -72,6 +79,8 @@ const SerialPortError = function() {
     this.message = null;
     this.errno = "ECONNREFUSED";
 };
+
+const BROADCAST_ADDRESS = 0;
 
 /**
  * @fileoverview ModbusRTU module, exports the ModbusRTU class.
@@ -322,8 +331,11 @@ function _writeBufferToPort(buffer, transactionId) {
     const transaction = this._transactions[transactionId];
 
     if (transaction) {
-        transaction._timeoutFired = false;
-        transaction._timeoutHandle = _startTimeout(this._timeout, transaction);
+        // Only start the timeout if a response is expected
+        if (transaction.nextLength > 0) {
+            transaction._timeoutFired = false;
+            transaction._timeoutHandle = _startTimeout(this._timeout, transaction);
+        }
 
         // If in debug mode, stash a copy of the request payload
         if (this._debugEnabled) {
@@ -333,6 +345,11 @@ function _writeBufferToPort(buffer, transactionId) {
     }
 
     this._port.write(buffer);
+
+    if (transaction && transaction.nextLength === 0) {
+        // If no response is expected, call the callback immediately
+        transaction.next();
+    }
 }
 
 /**
@@ -739,6 +756,11 @@ class ModbusRTU extends EventEmitter {
             return;
         }
 
+        if (address === BROADCAST_ADDRESS) {
+            if (next) next(new BroadcastNotAllowedError());
+            return;
+        }
+
         // function code defaults to 2
         code = code || 2;
 
@@ -798,6 +820,11 @@ class ModbusRTU extends EventEmitter {
             return;
         }
 
+        if (address === BROADCAST_ADDRESS) {
+            if (next) next(new BroadcastNotAllowedError());
+            return;
+        }
+
         // function code defaults to 4
         code = code || 4;
 
@@ -851,13 +878,19 @@ class ModbusRTU extends EventEmitter {
             return;
         }
 
+        let responseLength = 8;
+
+        if (address === BROADCAST_ADDRESS) {
+            responseLength = 0;
+        }
+
         const code = 5;
 
         // set state variables
         this._transactions[this._port._transactionIdWrite] = {
             nextAddress: address,
             nextCode: code,
-            nextLength: 8,
+            nextLength: responseLength,
             next: next
         };
 
@@ -904,9 +937,13 @@ class ModbusRTU extends EventEmitter {
 
         const code = 6;
 
-        let valueSize = 8;
+        let responseLength = 8;
         if (this._enron && !(dataAddress >= this._enronTables.shortRange[0] && dataAddress <= this._enronTables.shortRange[1])) {
-            valueSize = 10;
+            responseLength = 10;
+        }
+
+        if (address === BROADCAST_ADDRESS) {
+            responseLength = 0;
         }
 
         // set state variables
@@ -914,7 +951,7 @@ class ModbusRTU extends EventEmitter {
             nextAddress: address,
             nextDataAddress: dataAddress,
             nextCode: code,
-            nextLength: valueSize,
+            nextLength: responseLength,
             next: next
         };
 
@@ -956,6 +993,18 @@ class ModbusRTU extends EventEmitter {
             if (next) next(new PortNotOpenError());
             return;
         }
+
+        // sanity check
+        if (typeof address === "undefined") {
+            if (next) next(new BadAddressError());
+            return;
+        }
+
+        if (address === BROADCAST_ADDRESS) {
+            if (next) next(new BroadcastNotAllowedError());
+            return;
+        }
+
         const code = 7;
 
         // set state variables
@@ -1000,13 +1049,16 @@ class ModbusRTU extends EventEmitter {
         }
 
         const code = 15;
-        let i = 0;
+        let responseLength = 8;
+        if (address === BROADCAST_ADDRESS) {
+            responseLength = 0;
+        }
 
         // set state variables
         this._transactions[this._port._transactionIdWrite] = {
             nextAddress: address,
             nextCode: code,
-            nextLength: 8,
+            nextLength: responseLength,
             next: next
         };
 
@@ -1021,11 +1073,11 @@ class ModbusRTU extends EventEmitter {
         buf.writeUInt8(dataBytes, 6);
 
         // clear the data bytes before writing bits data
-        for (i = 0; i < dataBytes; i++) {
+        for (let i = 0; i < dataBytes; i++) {
             buf.writeUInt8(0, 7 + i);
         }
 
-        for (i = 0; i < array.length; i++) {
+        for (let i = 0; i < array.length; i++) {
             // buffer bits are already all zero (0)
             // only set the ones set to one (1)
             if (array[i]) {
@@ -1062,12 +1114,16 @@ class ModbusRTU extends EventEmitter {
         }
 
         const code = 16;
+        let responseLength = 8;
+        if (address === BROADCAST_ADDRESS) {
+            responseLength = 0;
+        }
 
         // set state variables
         this._transactions[this._port._transactionIdWrite] = {
             nextAddress: address,
             nextCode: code,
-            nextLength: 8,
+            nextLength: responseLength,
             next: next
         };
 
@@ -1116,11 +1172,18 @@ class ModbusRTU extends EventEmitter {
             if (next) next(new PortNotOpenError());
             return;
         }
+
         // sanity check
         if (typeof address === "undefined") {
             if (next) next(new BadAddressError());
             return;
         }
+
+        if (address === BROADCAST_ADDRESS) {
+            if (next) next(new BroadcastNotAllowedError());
+            return;
+        }
+
         // function code defaults to 20
         const code = 20;
         const byteCount = 7; // Fixed to 7 for a request of a single file record, to support multiple records (sub-requests), this needs to be calculated
@@ -1179,6 +1242,17 @@ class ModbusRTU extends EventEmitter {
             return;
         }
 
+        // sanity check
+        if (typeof address === "undefined") {
+            if (next) next(new BadAddressError());
+            return;
+        }
+
+        if (address === BROADCAST_ADDRESS) {
+            if (next) next(new BroadcastNotAllowedError());
+            return;
+        }
+
         const code = 0x2B; // 43
 
         // set state variables
@@ -1188,6 +1262,7 @@ class ModbusRTU extends EventEmitter {
             lengthUnknown: true,
             next: next
         };
+
         const codeLength = 5;
         const buf = Buffer.alloc(codeLength + 2); // add 2 crc bytes
         buf.writeUInt8(address, 0);
@@ -1218,6 +1293,11 @@ class ModbusRTU extends EventEmitter {
         // sanity check
         if (typeof address === "undefined" || !Array.isArray(parameterNumbers) || parameterNumbers.length > 16) {
             if (next) next(new BadAddressError());
+            return;
+        }
+
+        if (address === BROADCAST_ADDRESS) {
+            if (next) next(new BroadcastNotAllowedError());
             return;
         }
 
