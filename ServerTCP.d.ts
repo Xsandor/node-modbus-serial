@@ -51,7 +51,10 @@ export declare interface ServerTCP {
     on(event: 'socketError', listener: FCallback): this;
     on(event: 'error', listener: FCallback): this;
     on(event: 'initialized', listener: FCallback): this;
+    on(event: 'clientConnected', listener: FCallbackClient): this;
+    on(event: 'clientDisconnected', listener: FCallbackClient): this;
 }
 
 export type FCallbackVal<T> = (err: Error | null, value: T) => void;
+export type FCallbackClient = (remoteAddress: string) => void;
 export type FCallback = (err: Error | null) => void;

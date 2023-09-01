@@ -232,6 +232,7 @@ class ServerTCP extends EventEmitter {
 
         modbus._server.on("connection", function(sock) {
             let recvBuffer = Buffer.from([]);
+            modbus.emit("clientConnected", sock.remoteAddress);
             modbus.socks.set(sock, 0);
 
             modbusSerialDebug({
@@ -245,6 +246,7 @@ class ServerTCP extends EventEmitter {
                 modbusSerialDebug({
                     action: "closed"
                 });
+                modbus.emit("clientDisconnected", sock.remoteAddress);
                 modbus.socks.delete(sock);
             });
 
@@ -316,6 +318,10 @@ class ServerTCP extends EventEmitter {
                 modbus.emit("socketError", err);
             });
         });
+    }
+
+    getConnectedClients() {
+        return this.socks.map((sock) => sock.remoteAddress);
     }
 
     /**
