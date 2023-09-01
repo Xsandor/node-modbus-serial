@@ -39,4 +39,7 @@ export declare interface ServerSerial {
   on(event: 'error', listener: FCallback): this;
   on(event: 'initialized', listener: FCallback): this;
   on(event: 'socketError', listener: FCallback): this;
+  on(event: 'log', listener: FCallbackLog): this;
 }
+
+export type FCallbackLog = (type: 'warn' | 'info', message: string) => void;
