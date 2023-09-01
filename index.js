@@ -348,7 +348,6 @@ function _writeBufferToPort(buffer, transactionId) {
 
     if (transaction && transaction.nextLength === 0) {
         // If no response is expected, call the callback immediately
-        console.log("Calling callback immediately");
         transaction.next(null, {});
     }
 }
