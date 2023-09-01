@@ -32,3 +32,11 @@ interface ModbusServerVector {
   setRegister? (addr: number, value: number, unitID: number, cb: Function): void
   setRegisterArray? (startAddr: number, value: number[], unitID: number, cb: Function): void
 }
+
+export declare interface ServerSerial {
+  on(event: 'open', listener: FCallback): this;
+  on(event: 'close', listener: FCallback): this;
+  on(event: 'error', listener: FCallback): this;
+  on(event: 'initialized', listener: FCallback): this;
+  on(event: 'socketError', listener: FCallback): this;
+}
