@@ -23,11 +23,11 @@ interface IServiceVector {
         ((addr: number, unitID: number) => Promise<number>) |
         ((addr: number, unitID: number) => number);
     getMultipleInputRegisters?:
-        ((addr: number, length: number, unitID: number, cb: FCallbackVal<number>) => void) |
+        ((addr: number, length: number, unitID: number, cb: FCallbackVal<number[]>) => void) |
         ((addr: number, length: number, unitID: number) => Promise<number>) |
         ((addr: number, length: number, unitID: number) => number);
     getMultipleHoldingRegisters?: 
-        ((addr: number, length: number, unitID: number, cb: FCallbackVal<number>) => void) |
+        ((addr: number, length: number, unitID: number, cb: FCallbackVal<number[]>) => void) |
         ((addr: number, length: number, unitID: number) => Promise<number>) |
         ((addr: number, length: number, unitID: number) => number);
     setCoil?: 

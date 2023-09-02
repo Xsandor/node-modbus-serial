@@ -21,16 +21,16 @@ interface SerialServerOptions {
 }
 
 interface ModbusServerVector {
-  getCoil? (addr: number, unitID: number, cb: Function): void
-  getDiscreteInput? (addr: number, unitID: number, cb: Function): void
-  getInputRegister? (addr: number, unitID: number, cb: Function): void
-  getHoldingRegister? (addr: number, unitID: number, cb: Function): void
-  getMultipleInputRegisters? (startAddr: number, length: number, unitID: number, cb: Function): void
-  getMultipleHoldingRegisters? (startAddr: number, length: number, unitID: number, cb: Function): void
-  setCoil? (addr: number, value: number, unitID: number, cb: Function): void
-  setCoilArray? (startAddr: number, value: number[], unitID: number, cb: Function): void
-  setRegister? (addr: number, value: number, unitID: number, cb: Function): void
-  setRegisterArray? (startAddr: number, value: number[], unitID: number, cb: Function): void
+  getCoil? (addr: number, unitID: number, cb: FCallbackVal<number>): void
+  getDiscreteInput? (addr: number, unitID: number, cb: FCallbackVal<number>): void
+  getInputRegister? (addr: number, unitID: number, cb: FCallbackVal<number>): void
+  getHoldingRegister? (addr: number, unitID: number, cb: FCallbackVal<number>): void
+  getMultipleInputRegisters? (startAddr: number, length: number, unitID: number, cb: FCallbackVal<number[]>): void
+  getMultipleHoldingRegisters? (startAddr: number, length: number, unitID: number, cb: FCallbackVal<number[]>): void
+  setCoil? (addr: number, value: number, unitID: number, cb: FCallback): void
+  setCoilArray? (startAddr: number, value: number[], unitID: number, cb: FCallback): void
+  setRegister? (addr: number, value: number, unitID: number, cb: FCallback): void
+  setRegisterArray? (startAddr: number, value: number[], unitID: number, cb: FCallback): void
 }
 
 export declare interface ServerSerial {
