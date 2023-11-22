@@ -1012,7 +1012,7 @@ function _handleReadFile(requestBuffer, vector, unitID, callback) {
         responseBuffer.writeUInt8(0x12, 2);
         responseBuffer.writeUInt8(recordLength * 2 + 1, 3);
         responseBuffer.writeUInt8(referenceType, 4);
-        responseBuffer.write("084B8014 EKC2/3", 5, "ascii");
+        responseBuffer.write("084B4083 EKC2/3", 5, "ascii");
         callback(null, responseBuffer);
     } else {
         callback(1);
