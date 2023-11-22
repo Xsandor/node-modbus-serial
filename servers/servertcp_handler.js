@@ -1193,9 +1193,9 @@ function _handleReadDeviceIdentification(requestBuffer, vector, unitID, callback
  */
 function _handleReadCompressed(requestBuffer, vector, unitID, callback) {
     modbusSerialDebug({ action: "Handle Read Compressed", message: "Init." });
-    if (_errorRequestBufferLength(requestBuffer)) {
-        return;
-    }
+    // if (_errorRequestBufferLength(requestBuffer)) {
+    //     return;
+    // }
 
     const length = requestBuffer.readUInt8(2); // quantityOfParameters
 
