@@ -777,13 +777,13 @@ function _handleWriteSingleRegisterEnron(requestBuffer, vector, unitID, enronTab
  * @returns undefined
  * @private
  */
-function _handleReadExceptionStatus(_requestBuffer, vector, _unitID, callback) {
+function _handleReadExceptionStatus(_requestBuffer, vector, unitID, callback) {
     // build answer
     const responseBuffer = Buffer.alloc(5);
 
     if (vector.getExceptionStatus) {
         if (vector.getExceptionStatus.length === 2) {
-            vector.getExceptionStatus((err, value) => {
+            vector.getExceptionStatus(unitID, (err, value) => {
                 if (err) {
                     callback(err);
                     return;
@@ -793,7 +793,7 @@ function _handleReadExceptionStatus(_requestBuffer, vector, _unitID, callback) {
             });
         }
         else {
-            const value = vector.getExceptionStatus();
+            const value = vector.getExceptionStatus(unitID);
             responseBuffer.writeInt8(value, 2);
             callback(null, responseBuffer);
         }
@@ -1221,7 +1221,7 @@ function _handleReadCompressed(requestBuffer, vector, unitID, callback) {
     const responseBuffer = Buffer.alloc(4 + 2 * length + 3);
 
     try {
-        responseBuffer.writeUInt8(length, 2);
+        responseBuffer.writeUInt8(length * 4, 2);
     }
     catch (err) {
         callback(err);
@@ -1260,10 +1260,10 @@ function _handleReadCompressed(requestBuffer, vector, unitID, callback) {
         for (let i = 0; i < length; i++) {
             const cb = buildCb(i);
             try {
-                const promiseOrValue = vector.getHoldingRegister(pnus[i], unitID);
-                _handlePromiseOrValue(promiseOrValue, cb);
+                vector.getHoldingRegister(pnus[i], unitID, cb);
             }
             catch (err) {
+                console.log(err);
                 // TODO: Set status bit
             }
         }
