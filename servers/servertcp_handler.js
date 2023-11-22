@@ -1009,9 +1009,11 @@ function _handleReadFile(requestBuffer, vector, unitID, callback) {
 
     if (fileNumber === 2015 && recordLength === 8 && recordNumber === 0 && referenceType === 7) {
         const responseBuffer = Buffer.alloc(5 + recordLength * 2 + 2);
+        responseBuffer.writeUInt8(12, 1);
+        responseBuffer.writeUInt8(11, 2);
         responseBuffer.writeUInt8(recordLength, 3);
         responseBuffer.writeUInt8(referenceType, 4);
-        responseBuffer.write("084B8014 EKC2/3", 5, recordLength, "ascii");
+        responseBuffer.write("084B8014 EKC2/3", 5, "ascii");
         callback(null, responseBuffer);
     } else {
         callback(1);
