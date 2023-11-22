@@ -190,6 +190,9 @@ function _parseModbusBuffer(requestBuffer, vector, serverUnitID, sockWriter, opt
         case 43:
             handlers.handleMEI(requestBuffer, vector, unitID, cb);
             break;
+        case 65:
+            handlers.readCompressed(requestBuffer, vector, unitID, cb);
+            break;
         default: {
             modbus.emit("log", "warn", "Someoneusing an illegal function code: " + functionCode + ".");
             const errorCode = 0x01; // illegal function

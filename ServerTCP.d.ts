@@ -38,6 +38,10 @@ interface IServiceVector {
         ((addr: number, value: number, unitID: number, cb: FCallback) => void) |
         ((addr: number, value: number, unitID: number) => Promise<void>) |
         ((addr: number, value: number, unitID: number) => void)
+    getExceptionStatus?: 
+        ((unitID: number, cb: FCallback) => void) |
+        ((unitID: number) => Promise<number>) |
+        ((unitID: number) => number)
 }
 
 interface IServerOptions {

@@ -1,5 +1,5 @@
 import { SerialPortOptions } from './ModbusRTU'
-import { FCallback } from './ServerTCP'
+import type { FCallback, FCallbackVal } from './ServerTCP'
 
 import * as events from 'events';
 
@@ -31,6 +31,7 @@ interface ModbusServerVector {
   setCoilArray? (startAddr: number, value: number[], unitID: number, cb: FCallback): void
   setRegister? (addr: number, value: number, unitID: number, cb: FCallback): void
   setRegisterArray? (startAddr: number, value: number[], unitID: number, cb: FCallback): void
+  getExceptionStatus? (unitID: number, cb: FCallbackVal<number>): void
 }
 
 export declare interface ServerSerial {

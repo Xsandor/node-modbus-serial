@@ -768,6 +768,42 @@ function _handleWriteSingleRegisterEnron(requestBuffer, vector, unitID, enronTab
 }
 
 /**
+ * Function to handle FC7 request.
+ *
+ * @param requestBuffer - request Buffer from client
+ * @param vector - vector of functions for read and write
+ * @param unitID - Id of the requesting unit
+ * @param {function} callback - callback to be invoked passing {Buffer} response
+ * @returns undefined
+ * @private
+ */
+function _handleReadExceptionStatus(_requestBuffer, vector, _unitID, callback) {
+    // build answer
+    const responseBuffer = Buffer.alloc(5);
+
+    if (vector.getExceptionStatus) {
+        if (vector.getExceptionStatus.length === 1) {
+            vector.getExceptionStatus((err, value) => {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+                responseBuffer.writeInt8(value, 2);
+                callback(null, responseBuffer);
+            });
+        }
+        else {
+            const value = vector.getExceptionStatus();
+            responseBuffer.writeInt8(value, 2);
+            callback(null, responseBuffer);
+        }
+    } else {
+        responseBuffer.writeInt8(0, 2);
+        callback(null, responseBuffer);
+    }
+}
+
+/**
  * Function to handle FC15 request.
  *
  * @param requestBuffer - request Buffer from client
@@ -1146,6 +1182,88 @@ function _handleReadDeviceIdentification(requestBuffer, vector, unitID, callback
 }
 
 /**
+ * Function to handle FC65 request (Read Compressed).
+ *
+ * @param requestBuffer - request Buffer from client
+ * @param vector - vector of functions for read and write
+ * @param unitID - Id of the requesting unit
+ * @param {function} callback - callback to be invoked passing {Buffer} response
+ * @returns undefined
+ * @private
+ */
+function _handleReadCompressed(requestBuffer, vector, unitID, callback) {
+    if (_errorRequestBufferLength(requestBuffer)) {
+        return;
+    }
+
+    const length = requestBuffer.readUInt8(2); // quantityOfParameters
+
+    if (length === 0 || length > 16) {
+        callback({
+            modbusErrorCode: 0x02, // Illegal address
+            msg: "Invalid length"
+        });
+        return;
+    }
+
+    const pnus = [];
+    // for each parameter, read a UInt16BE from the requestBuffer starting from 3
+    for (let i = 0; i < length; i++) {
+        pnus.push(requestBuffer.readUInt16BE(3 + i * 2));
+    }
+
+    // build answer
+    const responseBuffer = Buffer.alloc(4 + 2 * length + 3);
+    try {
+        responseBuffer.writeUInt8(length, 2);
+    }
+    catch (err) {
+        callback(err);
+        return;
+    }
+
+    let callbackInvoked = false;
+    let cbCount = 0;
+    const buildCb = function(i) {
+        return function(err, value) {
+            if (err) {
+                if (!callbackInvoked) {
+                    callbackInvoked = true;
+                    callback(err);
+                }
+
+                return;
+            }
+
+            cbCount = cbCount + 1;
+
+            responseBuffer.writeUInt32BE(value, 5 + (i * 2));
+
+            if (cbCount === length && !callbackInvoked) {
+                modbusSerialDebug({ action: "FC65 response", responseBuffer: responseBuffer });
+
+                callbackInvoked = true;
+                callback(null, responseBuffer);
+            }
+        };
+    };
+
+    if (vector.getHoldingRegister) {
+        responseBuffer.writeUInt16BE(0, 3);
+        for (let i = 0; i < length; i++) {
+            const cb = buildCb(i);
+            try {
+                const promiseOrValue = vector.getHoldingRegister(pnus[i], unitID);
+                _handlePromiseOrValue(promiseOrValue, cb);
+            }
+            catch (err) {
+                // TODO: Set status bit
+            }
+        }
+    }
+}
+
+/**
  * Exports
  */
 module.exports = {
@@ -1158,5 +1276,7 @@ module.exports = {
     writeSingleRegisterEnron: _handleWriteSingleRegisterEnron,
     forceMultipleCoils: _handleForceMultipleCoils,
     writeMultipleRegisters: _handleWriteMultipleRegisters,
-    handleMEI: _handleMEI
+    handleMEI: _handleMEI,
+    readCompressed: _handleReadCompressed,
+    readExceptionStatus: _handleReadExceptionStatus
 };
