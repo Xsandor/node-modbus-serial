@@ -990,6 +990,36 @@ function _handleWriteMultipleRegisters(requestBuffer, vector, unitID, callback) 
 }
 
 /**
+ * Function to handle FC20 request.
+ *
+ * @param requestBuffer - request Buffer from client
+ * @param vector - vector of functions for read and write
+ * @param unitID - Id of the requesting unit
+ * @param {function} callback - callback to be invoked passing {Buffer} response
+ * @returns undefined
+ * @private
+ */
+function _handleReadFile(requestBuffer, vector, unitID, callback) {
+    // build answer
+    // const byteCount = requestBuffer.readUInt8(2);
+    const fileNumber = requestBuffer.readUInt16BE(4);
+    const recordNumber = requestBuffer.readUInt16BE(6);
+    const recordLength = requestBuffer.readUInt8(9);
+    const referenceType = requestBuffer.readUInt8(3);
+
+    if (fileNumber === 2015 && recordLength === 8 && recordNumber === 0 && referenceType === 7) {
+        const responseBuffer = Buffer.alloc(5 + recordLength * 2 + 2);
+        responseBuffer.writeUInt8(recordLength, 3);
+        responseBuffer.writeUInt8(referenceType, 4);
+        responseBuffer.write("084B1020", 5, recordLength, "ascii");
+        callback(null, responseBuffer);
+    } else {
+        callback(1);
+        return;
+    }
+}
+
+/**
  * Function to handle FC43 request.
  *
  * @param requestBuffer - request Buffer from client
@@ -1288,5 +1318,6 @@ module.exports = {
     writeMultipleRegisters: _handleWriteMultipleRegisters,
     handleMEI: _handleMEI,
     readCompressed: _handleReadCompressed,
-    readExceptionStatus: _handleReadExceptionStatus
+    readExceptionStatus: _handleReadExceptionStatus,
+    readFile: _handleReadFile
 };

@@ -190,6 +190,10 @@ function _parseModbusBuffer(requestBuffer, vector, serverUnitID, sockWriter, opt
             modbus.emit("log", "info", "Someone is trying to write a multliple holding registers.");
             handlers.writeMultipleRegisters(requestBuffer, vector, unitID, cb);
             break;
+        case 20:
+            modbus.emit("log", "info", "Someone is trying to read file.");
+            handlers.readFile(requestBuffer, vector, unitID, cb);
+            break;
         case 43:
             modbus.emit("log", "info", "Someone is trying to read MEI.");
             handlers.handleMEI(requestBuffer, vector, unitID, cb);
