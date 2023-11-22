@@ -782,7 +782,7 @@ function _handleReadExceptionStatus(_requestBuffer, vector, _unitID, callback) {
     const responseBuffer = Buffer.alloc(5);
 
     if (vector.getExceptionStatus) {
-        if (vector.getExceptionStatus.length === 1) {
+        if (vector.getExceptionStatus.length === 2) {
             vector.getExceptionStatus((err, value) => {
                 if (err) {
                     callback(err);
