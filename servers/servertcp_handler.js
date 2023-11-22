@@ -1291,7 +1291,7 @@ function _handleReadCompressed(requestBuffer, vector, unitID, callback) {
         for (let i = 0; i < length; i++) {
             const cb = buildCb(i);
             try {
-                vector.getHoldingRegister(pnus[i], unitID, cb);
+                vector.getHoldingRegister(pnus[i] - 1, unitID, cb);
             }
             catch (err) {
                 console.log(err);
