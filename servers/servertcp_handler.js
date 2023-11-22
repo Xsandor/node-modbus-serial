@@ -1192,11 +1192,14 @@ function _handleReadDeviceIdentification(requestBuffer, vector, unitID, callback
  * @private
  */
 function _handleReadCompressed(requestBuffer, vector, unitID, callback) {
+    modbusSerialDebug({ action: "Handle Read Compressed", message: "Init." });
     if (_errorRequestBufferLength(requestBuffer)) {
         return;
     }
 
     const length = requestBuffer.readUInt8(2); // quantityOfParameters
+
+    modbusSerialDebug({ action: "Handle Read Compressed", message: `Length ${length}` });
 
     if (length === 0 || length > 16) {
         callback({
@@ -1212,8 +1215,11 @@ function _handleReadCompressed(requestBuffer, vector, unitID, callback) {
         pnus.push(requestBuffer.readUInt16BE(3 + i * 2));
     }
 
+    modbusSerialDebug({ action: "Handle Read Compressed", message: `PNUs ${JSON.stringify(pnus)}` });
+
     // build answer
     const responseBuffer = Buffer.alloc(4 + 2 * length + 3);
+
     try {
         responseBuffer.writeUInt8(length, 2);
     }
@@ -1226,6 +1232,7 @@ function _handleReadCompressed(requestBuffer, vector, unitID, callback) {
     let cbCount = 0;
     const buildCb = function(i) {
         return function(err, value) {
+            modbusSerialDebug({ action: "Handle Read Compressed", message: `CB ${i} called` });
             if (err) {
                 if (!callbackInvoked) {
                     callbackInvoked = true;
@@ -1260,6 +1267,9 @@ function _handleReadCompressed(requestBuffer, vector, unitID, callback) {
                 // TODO: Set status bit
             }
         }
+    } else {
+        // Will not be able to get data
+        modbusSerialDebug({ action: "Handle Read Compressed", message: "Read Holding Not Supported :(" });
     }
 }
 

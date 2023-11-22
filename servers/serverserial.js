@@ -179,6 +179,9 @@ function _parseModbusBuffer(requestBuffer, vector, serverUnitID, sockWriter, opt
                 handlers.writeSingleRegister(requestBuffer, vector, unitID, cb);
             }
             break;
+        case 7:
+            handlers.readExceptionStatus(requestBuffer, vector, unitID, cb);
+            break;
         case 15:
             modbus.emit("log", "info", "Someone is trying to write a multliple coils.");
             handlers.forceMultipleCoils(requestBuffer, vector, unitID, cb);
@@ -188,9 +191,11 @@ function _parseModbusBuffer(requestBuffer, vector, serverUnitID, sockWriter, opt
             handlers.writeMultipleRegisters(requestBuffer, vector, unitID, cb);
             break;
         case 43:
+            modbus.emit("log", "info", "Someone is trying to read MEI.");
             handlers.handleMEI(requestBuffer, vector, unitID, cb);
             break;
         case 65:
+            modbus.emit("log", "info", "Someone is trying to read compressed.");
             handlers.readCompressed(requestBuffer, vector, unitID, cb);
             break;
         default: {
