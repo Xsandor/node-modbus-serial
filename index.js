@@ -187,7 +187,7 @@ function _readFC6(data, next) {
 
 /**
  * Parse the data for a Modbus -
- * Read Exceptio Status (FC=07)
+ * Read Exception Status (FC=07)
  *
  * @param {Buffer} data the data buffer to parse.
  * @param {Function} next the function to call next.
@@ -196,7 +196,7 @@ function _readFC7(data, next) {
     const value = data.readInt8(2);
 
     if (next)
-        next(null, value);
+        next(null, { "data": value });
 }
 
 /**
