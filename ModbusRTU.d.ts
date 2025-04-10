@@ -65,58 +65,68 @@ export class ModbusRTU {
   writeRegisterEnron(dataAddress: number, value: number): Promise<WriteRegisterResult>;
   writeRegisters(dataAddress: number, values: Array<number> | Buffer): Promise<WriteMultipleResult>; // 16
   readFileRecords(fileNumber: number, recordNumber: number, recordLength: number, referenceType: number): Promise<ReadFileRecordResult>;
-  readExceptionStatus(): Promise<number>;
+  readExceptionStatus(): Promise<ReadExceptionStatusResult>;
   readDeviceIdentification(deviceIdCode: number, objectId: 1 | 2 | 3 | 4): Promise<ReadDeviceIdentificationResult>;
   readCompressed(parameterNumbers: Array<number>): Promise<ReadCompressedResult>;
   
   on(event: 'close', listener: () => unknown): this;
 
   isOpen: boolean;
+  isDebugEnabled: boolean;
 }
 
 export interface NodeStyleCallback<T> {
   (err: NodeJS.ErrnoException, param: T): void;
 }
 
-export interface ReadCoilResult {
+export interface BaseResult {
+  responses?: Buffer[];
+  request?: Buffer;
+}
+
+export interface ReadCoilResult extends BaseResult {
   data: Array<boolean>;
   buffer: Buffer;
 }
 
-export interface ReadRegisterResult {
+export interface ReadRegisterResult extends BaseResult {
   data: Array<number>;
   buffer: Buffer;
 }
 
-export interface WriteCoilResult {
+export interface WriteCoilResult extends BaseResult {
   address: number;
   state: boolean;
 }
 
-export interface WriteRegisterResult {
+export interface WriteRegisterResult extends BaseResult {
   address: number;
   value: number;
 }
 
-export interface WriteMultipleResult {
+export interface WriteMultipleResult extends BaseResult {
   address: number;
   length: number;
 }
 
-export interface ReadFileRecordResult {
+export interface ReadFileRecordResult extends BaseResult {
   data: Buffer | string;
   length: number;
 }
 
-export interface ReadDeviceIdentificationResult {
+export interface ReadDeviceIdentificationResult extends BaseResult {
   data: string[];
   conformityLevel: number;
 }
 
-export interface ReadCompressedResult {
+export interface ReadCompressedResult extends BaseResult {
   data: number[];
   errorFlags: number;
   buffer: Buffer;
+}
+
+export interface ReadExceptionStatusResult extends BaseResult {
+  data: number;
 }
 
 export interface SerialPortOptions {
